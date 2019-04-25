@@ -1,5 +1,6 @@
 import pyglet
 import numpy as np
+import random
 
 # rectangle class
 
@@ -8,6 +9,14 @@ class Rect:
 
     def __init__(self, x, y, w, h):
         self.set(x, y, w, h)
+
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def y(self):
+        return self._y
 
     def draw(self):
         pyglet.graphics.draw(4, pyglet.gl.GL_QUADS, self._quad)
@@ -26,38 +35,44 @@ class Rect:
         return f"Rect(x={self._x}, y={self._y}, w={self._w}, h={self._h})"
 
 
-# main function
-def main():
-    wWidth = 800
-    wHeight = 600
-    window = pyglet.window.Window(wWidth, wHeight)
-    resolution = 20
-    spacing = 2
+class Window(pyglet.window.Window):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        wWidth = self.width
+        wHeight = self.height
 
-    rects = [[None] * resolution for i in range(resolution)]
-    print(rects)
+        resolution = 50
+        spacing = 2
 
-    for x in range(0, resolution):
-        for y in range(0, resolution):
-            rects[x][y] = Rect(
-                x * (wWidth / resolution) + (spacing / 2),
-                y * (wHeight / resolution) + (spacing / 2),
-                wWidth / resolution - spacing,
-                wHeight / resolution - spacing
-            )
+        self.rects = [[None] * resolution for i in range(resolution)]
 
-    # draw func
-    @window.event
-    def on_draw():
-        window.clear()
+        for x in range(0, resolution):
+            for y in range(0, resolution):
+                self.rects[x][y] = Rect(
+                    x * (wWidth / resolution) + (spacing / 2),
+                    y * (wHeight / resolution) + (spacing / 2),
+                    wWidth / resolution - spacing,
+                    wHeight / resolution - spacing
+                )
 
-        for row in rects:
+    def on_draw(self):
+        self.clear()
+
+        for row in self.rects:
             for rect in row:
-                print(rect)
                 rect.draw()
 
-    pyglet.app.run()
+    def update(self, dt):
+        for row in self.rects:
+            for rect in row:
+                randX = random.randrange(-1, 2)
+                randY = 0
+                x = rect.x + randX
+                y = rect.y + randY
+
+                rect.set(x, y)
 
 
-if __name__ == '__main__':
-    main()
+window = Window(1200, 720)
+pyglet.clock.schedule_interval(window.update, 1/120)
+pyglet.app.run()
